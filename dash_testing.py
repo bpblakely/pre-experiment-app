@@ -149,8 +149,8 @@ def create_figure(x,y,color,title,color_map,df):
     fig = px.bar(df, x=x, y= y, color=color, barmode="group",title = title,color_discrete_map=color_map)
     return fig
 
-def create_boxplot(x,y,color,title,color_map,df):
-    fig = px.box(df, x=x, y= y, color=color, points="outliers",title = title,color_discrete_map=color_map)
+def create_boxplot(x,y,color,color_map,df):
+    fig = px.box(df, x=x, y= y, color=color, points="outliers",color_discrete_map=color_map)
     return fig
 
 @app.callback([dash.dependencies.Output('example-graph', 'figure'),
@@ -221,7 +221,7 @@ def update_figure(selected_value,on,data_switch,start_date, end_date,seleceted_r
         data = data.loc[data.estMethod.str.contains('loess')]
 
     bar_fig = create_figure(x=x_value,y=y_value,color=color_value,title=title,color_map=color_map,df = summarized)
-    box_fig = create_boxplot(x=x_value,y=y_value,color=color_value,title=title,color_map=color_map,df = data)
+    box_fig = create_boxplot(x=x_value,y=y_value,color=color_value,color_map=color_map,df = data)
     return bar_fig,box_fig, days_spanned_string,dataset_string
 
 if __name__ == '__main__':
