@@ -202,7 +202,7 @@ def update_figure(selected_value,on,data_switch,start_date, end_date,seleceted_r
     summarized.reset_index(inplace=True)  
 
     summarized.sort_values(by=['estMethod','velComp'],inplace=True,ascending= True)
-    df.sort_values(by=['estMethod','velComp'],inplace=True)
+    data.sort_values(by=['estMethod','velComp'],inplace=True)
 
     if on:
         x_value, color_value = "velComp", "estMethod"
