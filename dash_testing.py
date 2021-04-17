@@ -23,7 +23,10 @@ min_date = df['date'].min()
 max_date = df['date'].max()
 
 summarized = df.groupby(['estMethod','velComp']).mean()
-summarized.reset_index(inplace=True)  
+summarized.reset_index(inplace=True)
+
+summarized.sort_values(by=['estMethod','velComp'],inplace=True)
+df.sort_values(by=['estMethod','velComp'],inplace=True)
 
 columns = ['totalTweets', 'estimatedTweets', 'span','knots', 'absRelBias', 'mab', 'rmsd', 'tstat', 'pval']
 regions = list(df.region.unique())
@@ -32,8 +35,18 @@ x_value = "estMethod"
 y_value = "totalTweets"
 color_value = "velComp"
 
-fig = px.bar(summarized, x= x_value, y= y_value, color=color_value, barmode="group")
-test_fig = px.box(df, x= x_value, y= y_value, color=color_value, points="outliers")
+colors = ['#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A', '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52']
+
+est_color_map = {}
+for i,c in enumerate(df["estMethod"].unique()):
+    est_color_map[c] = colors[i]
+    
+vel_color_map = {}
+for i,c in enumerate(df["velComp"].unique()):
+    vel_color_map[c] = colors[i]
+
+fig = px.bar(summarized, x= x_value, y= y_value, color=color_value, barmode="group",color_discrete_map=vel_color_map)
+test_fig = px.box(df, x= x_value, y= y_value, color=color_value, points="outliers",color_discrete_map=vel_color_map)
 
 app.layout = html.Div(children=[
     html.H1(children='Pre-experiment Data Visualization'),
@@ -132,12 +145,12 @@ app.layout = html.Div(children=[
 ],style = {"background-color":'milk'})
 
 
-def create_figure(x,y,color,title,df):
-    fig = px.bar(df, x=x, y= y, color=color, barmode="group",title = title)
+def create_figure(x,y,color,title,color_map,df):
+    fig = px.bar(df, x=x, y= y, color=color, barmode="group",title = title,color_discrete_map=color_map)
     return fig
 
-def create_boxplot(x,y,color,title,df):
-    fig = px.box(df, x=x, y= y, color=color, points="outliers",title = title)
+def create_boxplot(x,y,color,title,color_map,df):
+    fig = px.box(df, x=x, y= y, color=color, points="outliers",title = title,color_discrete_map=color_map)
     return fig
 
 @app.callback([dash.dependencies.Output('example-graph', 'figure'),
@@ -176,7 +189,6 @@ def update_figure(selected_value,on,data_switch,start_date, end_date,seleceted_r
     else:
         df = df_old
         dataset_string += "old velocity method"
-
     # Handle bad inputs by returning the same graph (unchanged)
     if start_date_object > end_date_object or selected_value == None or len(seleceted_regions) == 0:
         return bar_current,box_current, days_spanned_string,dataset_string
@@ -188,11 +200,16 @@ def update_figure(selected_value,on,data_switch,start_date, end_date,seleceted_r
 
     summarized = data.groupby(['estMethod','velComp']).mean()
     summarized.reset_index(inplace=True)  
-    
+
+    summarized.sort_values(by=['estMethod','velComp'],inplace=True,ascending= True)
+    df.sort_values(by=['estMethod','velComp'],inplace=True)
+
     if on:
         x_value, color_value = "velComp", "estMethod"
+        color_map = est_color_map
     else:
         x_value, color_value = "estMethod", "velComp"
+        color_map = vel_color_map
     
     y_value = selected_value
     if y_value == 'knots':
@@ -203,8 +220,8 @@ def update_figure(selected_value,on,data_switch,start_date, end_date,seleceted_r
         summarized = summarized.loc[summarized.estMethod.str.contains('loess')]
         data = data.loc[data.estMethod.str.contains('loess')]
 
-    bar_fig = create_figure(x=x_value,y=y_value,color=color_value,title=title,df = summarized)
-    box_fig = create_boxplot(x=x_value,y=y_value,color=color_value,title=title,df = data)
+    bar_fig = create_figure(x=x_value,y=y_value,color=color_value,title=title,color_map=color_map,df = summarized)
+    box_fig = create_boxplot(x=x_value,y=y_value,color=color_value,title=title,color_map=color_map,df = data)
     return bar_fig,box_fig, days_spanned_string,dataset_string
 
 if __name__ == '__main__':
