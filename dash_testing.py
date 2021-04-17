@@ -139,9 +139,9 @@ def update_figure(selected_value,on,start_date, end_date,seleceted_regions,bar_c
     days_spanned_string = f"Number of days spanned: {days_spanned}"
     region_names = ', '.join([region.split('-')[0] for region in seleceted_regions])
     if on:
-        title = f"{selected_value} by estMethod for {region_names} over {days_spanned} days"
-    else:
         title = f"{selected_value} by velComp for {region_names} over {days_spanned} days"
+    else:
+        title = f"{selected_value} by estMethod for {region_names} over {days_spanned} days"
 
     # Handle bad inputs by returning the same graph (unchanged)
     if start_date_object > end_date_object or selected_value == None or len(seleceted_regions) == 0:
