@@ -9,7 +9,8 @@ from datetime import date
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
+server = app.server
+app.title="Pre-experiment Data"
 
 df = pd.read_csv(r'final_out_new_method.csv',parse_dates=['date'])
 df['date'] = df['date'].apply(lambda x: x.date())
@@ -173,4 +174,4 @@ def update_figure(selected_value,on,start_date, end_date,seleceted_regions,bar_c
     return bar_fig,box_fig, days_spanned_string
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
