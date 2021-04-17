@@ -11,7 +11,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 
-df = pd.read_csv(r'G:\Python File Saves\final_out_new_method.csv',parse_dates=['date'])
+df = pd.read_csv(r'final_out_new_method.csv',parse_dates=['date'])
 df['date'] = df['date'].apply(lambda x: x.date())
 
 min_date = df['date'].min()
