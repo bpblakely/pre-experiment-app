@@ -137,7 +137,7 @@ def update_figure(selected_value,on,start_date, end_date,seleceted_regions,bar_c
     
     days_spanned = (end_date_object - start_date_object).days
     days_spanned_string = f"Number of days spanned: {days_spanned}"
-    region_names = ', '.join([region.split('-')[0] for region in regions])
+    region_names = ', '.join([region.split('-')[0] for region in seleceted_regions])
     if on:
         title = f"{selected_value} by estMethod for {region_names} over {days_spanned} days"
     else:
