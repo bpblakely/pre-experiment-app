@@ -12,8 +12,12 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 app.title="Pre-experiment Data"
 
-df = pd.read_csv(r'final_out_new_method.csv',parse_dates=['date'])
-df['date'] = df['date'].apply(lambda x: x.date())
+df_old = pd.read_csv(r'final_out.csv',parse_dates=['date'])
+df_new = pd.read_csv(r'final_out_new_method.csv',parse_dates=['date'])
+df_old['date'] = df_old['date'].apply(lambda x: x.date())
+df_new['date'] = df_new['date'].apply(lambda x: x.date())
+
+df = df_old
 
 min_date = df['date'].min()
 max_date = df['date'].max()
@@ -67,16 +71,36 @@ app.layout = html.Div(children=[
         ),
         
         html.Br(),
-        html.Div('Select Date Range', style={'color': 'black', 'fontSize': 14,'font-weight':'bold'}),
-        dcc.DatePickerRange(
-            id='my-date-picker-range',
-            min_date_allowed=min_date,
-            max_date_allowed=max_date,
-            initial_visible_month=min_date,
-            start_date = min_date,
-            end_date=max_date
+        html.Div(children=[
+            html.Div('Select Date Range', style={'color': 'black', 'fontSize': 14,'font-weight':'bold'}),
+            html.Div(children=[
+                dcc.DatePickerRange(
+                    id='my-date-picker-range',
+                    min_date_allowed=min_date,
+                    max_date_allowed=max_date,
+                    initial_visible_month=min_date,
+                    start_date = min_date,
+                    end_date=max_date
+                ),
+                html.Div(
+                    daq.BooleanSwitch(
+                        id='dataset-switch',
+                        on=False,
+                        label="New Velocity Method",
+                        labelPosition="bottom"
+                    ),
+                    style={"margin":"auto"}
+                )
+                ],
+                style={"display":'flex'}
+            ),
+            html.Div(children=[
+                html.Div(id='output-container-date-picker-range', style = {'color':'grey','fontSize':12}),
+                html.Div(id='output-dataset-switch', style = {'color':'grey','fontSize':12,"margin":"auto"}),
+            ], style={"display":'flex'}
+            ),
+        ]
         ),
-        html.Div(id='output-container-date-picker-range', style = {'color':'grey','fontSize':12}),
     ],
     style= {'background-color': '#f8f9fa','padding': '20px 10px'}
     ),
@@ -119,17 +143,19 @@ def create_boxplot(x,y,color,title,df):
 @app.callback([dash.dependencies.Output('example-graph', 'figure'),
             dash.dependencies.Output('test-graph', 'figure'),   
             dash.dependencies.Output('output-container-date-picker-range', 'children'),
+            dash.dependencies.Output('output-dataset-switch', 'children'),
             ], 
               [dash.dependencies.Input('input', 'value'),
               dash.dependencies.Input('my-boolean-switch', 'on'),
+              dash.dependencies.Input('dataset-switch', 'on'),
               dash.dependencies.Input('my-date-picker-range', 'start_date'),
               dash.dependencies.Input('my-date-picker-range', 'end_date'),
               dash.dependencies.Input('region_dropdown', 'value'),
               dash.dependencies.State('example-graph', 'figure'),
               dash.dependencies.State('test-graph', 'figure'),
               ])
-def update_figure(selected_value,on,start_date, end_date,seleceted_regions,bar_current, box_current):
-    global x_value, y_value,color_value
+def update_figure(selected_value,on,data_switch,start_date, end_date,seleceted_regions,bar_current, box_current):
+    global x_value, y_value,color_value,df
     
     # Select date span
     start_date_object = date.fromisoformat(start_date)
@@ -143,9 +169,17 @@ def update_figure(selected_value,on,start_date, end_date,seleceted_regions,bar_c
     else:
         title = f"{selected_value} by estMethod for {region_names} over {days_spanned} days"
 
+    dataset_string = "Using "
+    if data_switch:
+        df = df_new
+        dataset_string += "new velocity method"
+    else:
+        df = df_old
+        dataset_string += "old velocity method"
+
     # Handle bad inputs by returning the same graph (unchanged)
     if start_date_object > end_date_object or selected_value == None or len(seleceted_regions) == 0:
-        return bar_current,box_current, days_spanned_string
+        return bar_current,box_current, days_spanned_string,dataset_string
 
     data = df.loc[(df['date'] >= start_date_object) & (df['date'] <= end_date_object)]
     
@@ -171,7 +205,7 @@ def update_figure(selected_value,on,start_date, end_date,seleceted_regions,bar_c
 
     bar_fig = create_figure(x=x_value,y=y_value,color=color_value,title=title,df = summarized)
     box_fig = create_boxplot(x=x_value,y=y_value,color=color_value,title=title,df = data)
-    return bar_fig,box_fig, days_spanned_string
+    return bar_fig,box_fig, days_spanned_string,dataset_string
 
 if __name__ == '__main__':
     app.run_server()
