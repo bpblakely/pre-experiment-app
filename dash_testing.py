@@ -12,7 +12,8 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 app.title="Pre-experiment Data"
 
-df_old = pd.read_csv(r'final_out.csv',parse_dates=['date'])
+df_old = pd.read_csv(r'averaged_experiment_data.csv',parse_dates=['date'])
+# df_old = pd.read_csv(r'G:\Python File Saves\pre-experiment-app\averaged_experiment_data.csv',parse_dates=['date'])
 df_new = pd.read_csv(r'final_out_new_method.csv',parse_dates=['date'])
 df_old['date'] = df_old['date'].apply(lambda x: x.date())
 df_new['date'] = df_new['date'].apply(lambda x: x.date())
@@ -53,6 +54,7 @@ app.layout = html.Div(children=[
 
     html.Div(children='''
              Currently, the bar plot is the mean of the selected date range for the selected cities. The box plot is using all the data under the same selected parameters.
+             The OLD velocity computation method is now the mean of 5 independent runs of the pre-experiment.
              '''
         ),
     html.Br(),
